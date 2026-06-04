@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-wc-dark text-white min-h-screen;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.tier-card {
+  @apply bg-wc-card border border-wc-border rounded-xl p-4;
+}
+
+.btn-primary {
+  @apply bg-wc-gold text-black font-bold py-2 px-6 rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-wc-border text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition-all;
+}
+
+.selected-team {
+  @apply ring-2 ring-wc-gold bg-wc-gold/10;
+}
