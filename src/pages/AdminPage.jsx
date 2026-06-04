@@ -283,7 +283,19 @@ export default function AdminPage() {
                   <span className="font-bold">{e.name}</span>
                   {e.email && <span className="text-gray-400 text-sm ml-2">{e.email}</span>}
                 </div>
-                <span className="text-wc-gold font-bold">{(e.total_points || 0).toFixed(1)} pts</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-wc-gold font-bold">{(e.total_points || 0).toFixed(1)} pts</span>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Delete entry for ${e.name}?`)) return
+                      const { error } = await supabase.from('entries').delete().eq('id', e.id)
+                      if (!error) setEntries(prev => prev.filter(x => x.id !== e.id))
+                    }}
+                    className="text-red-400 hover:text-red-300 text-xs border border-red-800 hover:border-red-600 rounded px-2 py-1 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-x-8 gap-y-0.5 text-xs text-gray-400">
                 {[1,2,3,4,5,6,7,8].map(i => (
