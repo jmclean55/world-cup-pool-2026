@@ -87,6 +87,7 @@ export const PLAYER_TIERS = [
       { name: 'Raul Jimenez', country: 'Mexico', odds: 8000 },
       { name: 'Mohamed Salah', country: 'Egypt', odds: 8000 },
       { name: 'Omar Marmoush', country: 'Egypt', odds: 10000 },
+      { name: 'Freddy Adu', country: 'USA', odds: 999999, easterEgg: true },
     ],
   },
 ]

@@ -12,8 +12,9 @@ export default function PicksPage() {
   const [error, setError] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [teamPicks, setTeamPicks] = useState({})   // { tier: teamName }
-  const [playerPicks, setPlayerPicks] = useState({}) // { tier: playerName }
+  const [teamPicks, setTeamPicks] = useState({})
+  const [playerPicks, setPlayerPicks] = useState({})
+  const [freddyVisible, setFreddyVisible] = useState(false)
 
   useEffect(() => {
     const now = new Date()
@@ -201,16 +202,23 @@ export default function PicksPage() {
                     <button
                       key={player.name}
                       type="button"
-                      onClick={() => setPlayerPicks(p => ({ ...p, [tier.tier]: player.name }))}
+                      onClick={() => {
+                        if (player.easterEgg) { setFreddyVisible(true); return }
+                        setPlayerPicks(p => ({ ...p, [tier.tier]: player.name }))
+                      }}
                       className={`rounded-lg px-3 py-2 text-sm text-left border transition-all ${
-                        playerPicks[tier.tier] === player.name
+                        player.easterEgg
+                          ? 'border-wc-border hover:border-yellow-500 bg-wc-dark opacity-75'
+                          : playerPicks[tier.tier] === player.name
                           ? 'selected-team border-wc-gold'
                           : 'border-wc-border hover:border-gray-500 bg-wc-dark'
                       }`}
                     >
                       <div className="font-medium">{player.name}</div>
                       <div className="text-xs text-gray-500">{player.country}</div>
-                      <div className="text-xs text-gray-400">+{player.odds.toLocaleString()}</div>
+                      <div className="text-xs text-gray-400">
+                        {player.easterEgg ? '🌟 Legend' : `+${player.odds.toLocaleString()}`}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -233,6 +241,24 @@ export default function PicksPage() {
           )}
         </div>
       </form>
+
+      {freddyVisible && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+          onClick={() => setFreddyVisible(false)}
+        >
+          <div className="text-center space-y-4 p-8" onClick={e => e.stopPropagation()}>
+            <p className="text-2xl font-bold text-wc-gold">Nice try... 😂</p>
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuijzHzR_3w6RLZ_1Ero1Pb-1NB1ig1ftShsxaUspU7g&s=10"
+              alt="Freddy Adu"
+              className="w-64 rounded-xl mx-auto shadow-2xl"
+            />
+            <p className="text-gray-400 text-sm">Freddy Adu is not eligible for this pool.</p>
+            <button onClick={() => setFreddyVisible(false)} className="btn-primary">Close</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
