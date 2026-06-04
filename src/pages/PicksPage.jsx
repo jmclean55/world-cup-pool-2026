@@ -15,17 +15,47 @@ export default function PicksPage() {
   const [teamPicks, setTeamPicks] = useState({})
   const [playerPicks, setPlayerPicks] = useState({})
   const [freddyVisible, setFreddyVisible] = useState(false)
+  const [existingEntry, setExistingEntry] = useState(null)
+  const [lookupName, setLookupName] = useState('')
+  const [lookupError, setLookupError] = useState('')
+  const [mode, setMode] = useState('new') // 'new' | 'edit-lookup' | 'edit-form'
 
   useEffect(() => {
     const now = new Date()
     if (now >= LOCK_TIME) { setLocked(true); return }
-    // also check db setting
     supabase.from('settings').select('value').eq('key', 'picks_locked').single()
       .then(({ data }) => { if (data?.value === 'true') setLocked(true) })
     const ms = LOCK_TIME - now
     const t = setTimeout(() => setLocked(true), ms)
     return () => clearTimeout(t)
   }, [])
+
+  async function handleLookup(e) {
+    e.preventDefault()
+    setLookupError('')
+    const { data } = await supabase
+      .from('entries')
+      .select('*')
+      .ilike('name', lookupName.trim())
+      .single()
+    if (!data) {
+      setLookupError('No entry found with that name. Check the spelling and try again.')
+      return
+    }
+    // Pre-fill the form with existing picks
+    setExistingEntry(data)
+    setName(data.name)
+    setEmail(data.email || '')
+    setTeamPicks({
+      1: data.team_tier1, 2: data.team_tier2, 3: data.team_tier3, 4: data.team_tier4,
+      5: data.team_tier5, 6: data.team_tier6, 7: data.team_tier7, 8: data.team_tier8,
+    })
+    setPlayerPicks({
+      1: data.player_tier1, 2: data.player_tier2, 3: data.player_tier3,
+      4: data.player_tier4, 5: data.player_tier5,
+    })
+    setMode('edit-form')
+  }
 
   const allTeamsPicked = TEAM_TIERS.every(t => teamPicks[t.tier])
   const allPlayersPicked = PLAYER_TIERS.every(t => playerPicks[t.tier])
@@ -39,21 +69,26 @@ export default function PicksPage() {
     const payload = {
       name: name.trim(),
       email: email.trim() || null,
-      team_tier1: teamPicks[1],
-      team_tier2: teamPicks[2],
-      team_tier3: teamPicks[3],
-      team_tier4: teamPicks[4],
-      team_tier5: teamPicks[5],
-      team_tier6: teamPicks[6],
-      team_tier7: teamPicks[7],
-      team_tier8: teamPicks[8],
-      player_tier1: playerPicks[1],
-      player_tier2: playerPicks[2],
-      player_tier3: playerPicks[3],
-      player_tier4: playerPicks[4],
-      player_tier5: playerPicks[5],
+      team_tier1: teamPicks[1], team_tier2: teamPicks[2], team_tier3: teamPicks[3],
+      team_tier4: teamPicks[4], team_tier5: teamPicks[5], team_tier6: teamPicks[6],
+      team_tier7: teamPicks[7], team_tier8: teamPicks[8],
+      player_tier1: playerPicks[1], player_tier2: playerPicks[2], player_tier3: playerPicks[3],
+      player_tier4: playerPicks[4], player_tier5: playerPicks[5],
     }
-    const { error: err } = await supabase.from('entries').insert(payload)
+
+    let err
+    if (existingEntry) {
+      // Update existing entry
+      const { error: updateErr } = await supabase
+        .from('entries')
+        .update(payload)
+        .eq('id', existingEntry.id)
+      err = updateErr
+    } else {
+      const { error: insertErr } = await supabase.from('entries').insert(payload)
+      err = insertErr
+    }
+
     if (err) {
       setError('Something went wrong. Please try again.')
       setSubmitting(false)
@@ -68,10 +103,10 @@ export default function PicksPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         access_key: 'cbdd066b-9202-4529-8ef2-3394906a0ee2',
-        subject: `New WC Pool Entry: ${name.trim()}`,
-        message: `New entry from ${name.trim()}${email ? ` (${email})` : ''}.\n\nTeams: ${teamSummary}\n\nPlayers: ${playerSummary}`,
+        subject: existingEntry ? `Updated WC Pool Entry: ${name.trim()}` : `New WC Pool Entry: ${name.trim()}`,
+        message: `${existingEntry ? 'Updated' : 'New'} entry from ${name.trim()}${email ? ` (${email})` : ''}.\n\nTeams: ${teamSummary}\n\nPlayers: ${playerSummary}`,
       }),
-    }).catch(() => {}) // fire and forget — don't block submission on email failure
+    }).catch(() => {})
 
     setSubmitted(true)
     setSubmitting(false)
@@ -81,7 +116,9 @@ export default function PicksPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <div className="text-6xl">⚽</div>
-        <h2 className="text-3xl font-bold text-wc-gold">Picks Submitted!</h2>
+        <h2 className="text-3xl font-bold text-wc-gold">
+          {existingEntry ? 'Picks Updated!' : 'Picks Submitted!'}
+        </h2>
         <p className="text-gray-400">Good luck, {name}! Check the leaderboard once the tournament starts.</p>
         <div className="tier-card mt-4 w-full max-w-md">
           <h3 className="font-bold mb-3 text-wc-gold">Your Teams</h3>
@@ -113,10 +150,52 @@ export default function PicksPage() {
     )
   }
 
+  if (mode === 'edit-lookup') {
+    return (
+      <div className="max-w-md mx-auto pt-16">
+        <button onClick={() => setMode('new')} className="text-gray-400 hover:text-white text-sm mb-6 flex items-center gap-1">
+          ← Back
+        </button>
+        <h2 className="text-2xl font-bold text-wc-gold mb-2">Edit Your Picks</h2>
+        <p className="text-gray-400 mb-6">Enter the name you used when you submitted your picks.</p>
+        <form onSubmit={handleLookup} className="space-y-4">
+          <input
+            type="text"
+            value={lookupName}
+            onChange={e => setLookupName(e.target.value)}
+            placeholder="Your name"
+            className="w-full bg-wc-dark border border-wc-border rounded-lg px-3 py-2 text-white focus:outline-none focus:border-wc-gold"
+            required
+          />
+          {lookupError && <p className="text-red-400 text-sm">{lookupError}</p>}
+          <button type="submit" className="btn-primary w-full">Find My Picks</button>
+        </form>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-wc-gold mb-2">Submit Your Picks</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-wc-gold mb-2">
+            {mode === 'edit-form' ? `Editing: ${existingEntry?.name}` : 'Submit Your Picks'}
+          </h2>
+          {mode === 'new' && (
+            <button
+              onClick={() => setMode('edit-lookup')}
+              className="text-sm text-wc-gold hover:underline"
+            >
+              Already submitted? Edit your picks →
+            </button>
+          )}
+          {mode === 'edit-form' && (
+            <button onClick={() => { setMode('new'); setExistingEntry(null); setName(''); setEmail(''); setTeamPicks({}); setPlayerPicks({}) }}
+              className="text-sm text-gray-400 hover:text-white">
+              ← Cancel
+            </button>
+          )}
+        </div>
         <p className="text-gray-400">
           Pick <strong className="text-white">1 team per tier</strong> and <strong className="text-white">1 player per tier</strong>.
           Picks lock at tournament kickoff — <span className="text-wc-gold">June 11, 2026 at noon ET</span>.
@@ -134,7 +213,8 @@ export default function PicksPage() {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Your name"
-              className="w-full bg-wc-dark border border-wc-border rounded-lg px-3 py-2 text-white focus:outline-none focus:border-wc-gold"
+              disabled={mode === 'edit-form'}
+              className="w-full bg-wc-dark border border-wc-border rounded-lg px-3 py-2 text-white focus:outline-none focus:border-wc-gold disabled:opacity-50"
               required
             />
           </div>
@@ -231,7 +311,7 @@ export default function PicksPage() {
 
         <div className="flex items-center gap-4 pb-8">
           <button type="submit" className="btn-primary text-lg px-8 py-3" disabled={!canSubmit || submitting}>
-            {submitting ? 'Submitting...' : 'Submit Picks'}
+            {submitting ? 'Saving...' : existingEntry ? 'Update Picks' : 'Submit Picks'}
           </button>
           {!canSubmit && name.trim() && (
             <p className="text-sm text-gray-400">
