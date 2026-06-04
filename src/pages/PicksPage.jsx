@@ -55,9 +55,24 @@ export default function PicksPage() {
     const { error: err } = await supabase.from('entries').insert(payload)
     if (err) {
       setError('Something went wrong. Please try again.')
-    } else {
-      setSubmitted(true)
+      setSubmitting(false)
+      return
     }
+
+    // Notify admin via Web3Forms
+    const teamSummary = TEAM_TIERS.map(t => `T${t.tier}: ${teamPicks[t.tier]}`).join(', ')
+    const playerSummary = PLAYER_TIERS.map(t => `P${t.tier}: ${playerPicks[t.tier]}`).join(', ')
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: 'cbdd066b-9202-4529-8ef2-3394906a0ee2',
+        subject: `New WC Pool Entry: ${name.trim()}`,
+        message: `New entry from ${name.trim()}${email ? ` (${email})` : ''}.\n\nTeams: ${teamSummary}\n\nPlayers: ${playerSummary}`,
+      }),
+    }).catch(() => {}) // fire and forget — don't block submission on email failure
+
+    setSubmitted(true)
     setSubmitting(false)
   }
 
