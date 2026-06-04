@@ -194,6 +194,7 @@ export default function PicksPage() {
                       }`}
                     >
                       <div className="font-medium">{player.name}</div>
+                      <div className="text-xs text-gray-500">{player.country}</div>
                       <div className="text-xs text-gray-400">+{player.odds.toLocaleString()}</div>
                     </button>
                   ))}
