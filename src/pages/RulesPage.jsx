@@ -98,6 +98,11 @@ export default function RulesPage() {
         <h3 className="text-lg font-bold mb-2">📅 Deadline</h3>
         <p className="text-gray-300 text-sm">Picks lock automatically at <strong className="text-wc-gold">June 11, 2026 at 12:00 PM ET</strong> — the start of the first match.</p>
       </div>
+
+      <div className="tier-card border-green-500/30">
+        <h3 className="text-lg font-bold mb-2">💵 Buy-In</h3>
+        <p className="text-gray-300 text-sm">Entry fee is <strong className="text-white">$25</strong>. Send via Venmo to <strong className="text-green-400">@jmclean23</strong>.</p>
+      </div>
     </div>
   )
 }
