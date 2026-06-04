@@ -3,12 +3,20 @@ import { supabase } from '../lib/supabase.js'
 import { TEAM_TIERS } from '../data/teams.js'
 import { PLAYER_TIERS } from '../data/players.js'
 
+const LOCK_TIME = new Date('2026-06-11T16:00:00Z')
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
+
 export default function LeaderboardPage() {
   const [entries, setEntries] = useState([])
   const [teamStats, setTeamStats] = useState({})
   const [playerStats, setPlayerStats] = useState({})
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(null)
+  const [adminPw, setAdminPw] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+
+  const picksRevealed = new Date() >= LOCK_TIME || isAdmin
 
   useEffect(() => {
     async function load() {
@@ -28,13 +36,6 @@ export default function LeaderboardPage() {
   function getTeamPts(entry) { return entry.team_points || 0 }
   function getPlayerPts(entry) { return entry.player_points || 0 }
 
-  function getEntryTeams(entry) {
-    return [1,2,3,4,5,6,7,8].map(i => entry[`team_tier${i}`]).filter(Boolean)
-  }
-  function getEntryPlayers(entry) {
-    return [1,2,3,4,5].map(i => entry[`player_tier${i}`]).filter(Boolean)
-  }
-
   if (loading) return <div className="text-center py-24 text-gray-400">Loading leaderboard...</div>
 
   if (entries.length === 0) {
@@ -49,13 +50,54 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-wc-gold mb-6">Leaderboard</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold text-wc-gold">Leaderboard</h2>
+        {!picksRevealed && !isAdmin && (
+          <button
+            onClick={() => setShowAdminLogin(v => !v)}
+            className="text-xs text-gray-500 hover:text-gray-300"
+          >
+            Commish login
+          </button>
+        )}
+      </div>
+
+      {/* Commish login */}
+      {showAdminLogin && !isAdmin && (
+        <div className="tier-card mb-6 max-w-sm flex gap-2 items-center">
+          <input
+            type="password"
+            value={adminPw}
+            onChange={e => setAdminPw(e.target.value)}
+            placeholder="Admin password"
+            className="flex-1 bg-wc-dark border border-wc-border rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-wc-gold"
+          />
+          <button
+            onClick={() => {
+              if (adminPw === ADMIN_PASSWORD) { setIsAdmin(true); setShowAdminLogin(false) }
+              else setAdminPw('')
+            }}
+            className="btn-primary text-sm py-1.5"
+          >
+            View
+          </button>
+        </div>
+      )}
+
+      {/* Pre-kickoff banner */}
+      {!picksRevealed && (
+        <div className="tier-card border-yellow-600/40 bg-yellow-900/10 mb-6 text-center py-4">
+          <p className="text-yellow-400 font-medium">🔒 Picks are hidden until tournament kickoff on June 11</p>
+          <p className="text-gray-400 text-sm mt-1">You can see who entered, but not what they picked.</p>
+        </div>
+      )}
+
       <div className="space-y-2">
         {entries.map((entry, idx) => (
           <div key={entry.id} className="tier-card">
             <button
               className="w-full text-left"
-              onClick={() => setExpanded(expanded === entry.id ? null : entry.id)}
+              onClick={() => picksRevealed && setExpanded(expanded === entry.id ? null : entry.id)}
             >
               <div className="flex items-center gap-4">
                 <span className={`text-2xl font-black w-8 shrink-0 ${
@@ -65,26 +107,33 @@ export default function LeaderboardPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-lg">{entry.name}</div>
-                  <div className="text-xs text-gray-400">
-                    Teams: {getTeamPts(entry).toFixed(1)} pts · Players: {getPlayerPts(entry).toFixed(1)} pts
+                  {picksRevealed ? (
+                    <div className="text-xs text-gray-400">
+                      Teams: {getTeamPts(entry).toFixed(1)} pts · Players: {getPlayerPts(entry).toFixed(1)} pts
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-500">Picks hidden until kickoff</div>
+                  )}
+                </div>
+                {picksRevealed && (
+                  <div className="text-right shrink-0">
+                    <div className="text-2xl font-black text-wc-gold">{(entry.total_points || 0).toFixed(1)}</div>
+                    <div className="text-xs text-gray-400">points</div>
                   </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-2xl font-black text-wc-gold">{(entry.total_points || 0).toFixed(1)}</div>
-                  <div className="text-xs text-gray-400">points</div>
-                </div>
-                <span className="text-gray-500 text-sm">{expanded === entry.id ? '▲' : '▼'}</span>
+                )}
+                {picksRevealed && (
+                  <span className="text-gray-500 text-sm">{expanded === entry.id ? '▲' : '▼'}</span>
+                )}
               </div>
             </button>
 
-            {expanded === entry.id && (
+            {picksRevealed && expanded === entry.id && (
               <div className="mt-4 pt-4 border-t border-wc-border grid sm:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-semibold text-wc-gold mb-2 text-sm uppercase tracking-wide">Teams</h4>
-                  {TEAM_TIERS.map((tier, i) => {
+                  {TEAM_TIERS.map(tier => {
                     const pick = entry[`team_tier${tier.tier}`]
                     const stats = teamStats[pick] || {}
-                    const pts = entry.team_points
                     return (
                       <div key={tier.tier} className="flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0">
                         <div>
