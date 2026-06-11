@@ -45,6 +45,13 @@ export default function App() {
         </div>
       </header>
 
+      {/* Venmo banner */}
+      <div className="bg-[#008CFF]/10 border-b border-[#008CFF]/30 text-center py-2 px-4">
+        <p className="text-sm text-[#008CFF] font-medium">
+          💸 Entry fee: Venmo <span className="font-bold text-white">@jmclean23</span>
+        </p>
+      </div>
+
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
         <Routes>
           <Route path="/" element={<PicksPage />} />
