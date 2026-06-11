@@ -118,6 +118,28 @@ export default function AdminPage() {
     ])
 
     // Recalculate points for every entry
+    // Note: calcTeamPoints expects camelCase keys — remap from snake_case DB columns
+    function toCalcTeam(s) {
+      return {
+        groupWins:        s.group_wins        || 0,
+        groupDraws:       s.group_draws       || 0,
+        groupWinnerBonus: s.group_winner      ? 1 : 0,
+        knockoutAdvance:  s.knockout_advance  ? 1 : 0,
+        roundOf32Wins:    s.round_of_32_wins  || 0,
+        roundOf16Wins:    s.round_of_16_wins  || 0,
+        quarterFinalWins: s.quarter_final_wins|| 0,
+        semiFinalWins:    s.semi_final_wins   || 0,
+        champion:         s.champion          || false,
+        upsetWins:        s.upset_wins        || 0,
+      }
+    }
+    function toCalcPlayer(s) {
+      return {
+        groupGoals:    s.group_goals    || 0,
+        knockoutGoals: s.knockout_goals || 0,
+      }
+    }
+
     const updatedEntries = entries.map(entry => {
       let teamPts = 0
       let playerPts = 0
@@ -125,23 +147,24 @@ export default function AdminPage() {
       for (let i = 1; i <= 8; i++) {
         const teamName = entry[`team_tier${i}`]
         if (teamName && teamStats[teamName]) {
-          teamPts += calcTeamPoints(teamStats[teamName])
+          teamPts += calcTeamPoints(toCalcTeam(teamStats[teamName]))
         }
       }
       for (let i = 1; i <= 5; i++) {
         const playerName = entry[`player_tier${i}`]
         if (playerName && playerStats[playerName]) {
-          playerPts += calcPlayerPoints(playerStats[playerName])
+          playerPts += calcPlayerPoints(toCalcPlayer(playerStats[playerName]))
         }
       }
 
-      return { id: entry.id, team_points: teamPts, player_points: playerPts }
+      return { id: entry.id, team_points: teamPts, player_points: playerPts, total_points: teamPts + playerPts }
     })
 
     for (const e of updatedEntries) {
       await supabase.from('entries').update({
-        team_points: e.team_points,
+        team_points:   e.team_points,
         player_points: e.player_points,
+        total_points:  e.total_points,
       }).eq('id', e.id)
     }
 
