@@ -157,15 +157,15 @@ export default function AdminPage() {
         }
       }
 
-      return { id: entry.id, team_points: teamPts, player_points: playerPts, total_points: teamPts + playerPts }
+      return { id: entry.id, team_points: teamPts, player_points: playerPts }
     })
 
     for (const e of updatedEntries) {
       await supabase.from('entries').update({
         team_points:   e.team_points,
         player_points: e.player_points,
-        total_points:  e.total_points,
       }).eq('id', e.id)
+      // total_points is a generated column (team_points + player_points) — Postgres updates it automatically
     }
 
     setSaving(false)
