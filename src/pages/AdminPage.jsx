@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { ALL_TEAMS, getTeamOdds } from '../data/teams.js'
-import { ALL_PLAYERS } from '../data/players.js'
+import { ALL_TEAMS, TEAM_TIERS, getTeamOdds } from '../data/teams.js'
+import { ALL_PLAYERS, PLAYER_TIERS } from '../data/players.js'
 import { calcTeamPoints, calcPlayerPoints } from '../data/scoring.js'
 
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
