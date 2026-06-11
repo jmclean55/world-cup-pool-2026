@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase.js'
 import { TEAM_TIERS } from '../data/teams.js'
 import { PLAYER_TIERS } from '../data/players.js'
 
-const LOCK_TIME = new Date('2026-06-11T16:00:00Z')
+const LOCK_TIME = new Date('2026-06-11T19:00:00Z')
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
 
 export default function LeaderboardPage() {
