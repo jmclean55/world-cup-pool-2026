@@ -4,6 +4,7 @@ import LeaderboardPage from './pages/LeaderboardPage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
 import RulesPage from './pages/RulesPage.jsx'
+import StatsPage from './pages/StatsPage.jsx'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
               { to: '/leaderboard', label: 'Leaderboard' },
               { to: '/results', label: 'Results' },
               { to: '/rules', label: 'Rules' },
+              { to: '/stats', label: 'Stats' },
             ].map(({ to, label }) => (
               <NavLink
                 key={to}
@@ -50,6 +52,7 @@ export default function App() {
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/rules" element={<RulesPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/stats" element={<StatsPage />} />
         </Routes>
       </main>
 
