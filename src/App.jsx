@@ -20,7 +20,6 @@ export default function App() {
           </div>
           <nav className="flex gap-1">
             {[
-              { to: '/', label: 'Picks' },
               { to: '/leaderboard', label: 'Leaderboard' },
               { to: '/results', label: 'Results' },
               { to: '/rules', label: 'Rules' },
@@ -54,7 +53,8 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
         <Routes>
-          <Route path="/" element={<PicksPage />} />
+          <Route path="/" element={<LeaderboardPage />} />
+          <Route path="/picks" element={<PicksPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/rules" element={<RulesPage />} />
