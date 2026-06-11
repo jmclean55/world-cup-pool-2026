@@ -6,6 +6,21 @@ import { PLAYER_TIERS } from '../data/players.js'
 const LOCK_TIME = new Date('2026-06-11T19:00:00Z')
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
 
+// Names who have paid — update this list as payments come in
+const PAID_NAMES = [
+  'tommy carey',
+  'krooster',
+  'michael madiraca',
+  'paul f',
+  'gary',
+  'liz',
+  'brian',
+]
+
+function hasPaid(name) {
+  return PAID_NAMES.some(p => name?.toLowerCase().includes(p.toLowerCase()))
+}
+
 export default function LeaderboardPage() {
   const [entries, setEntries] = useState([])
   const [teamStats, setTeamStats] = useState({})
@@ -92,6 +107,12 @@ export default function LeaderboardPage() {
         </div>
       )}
 
+      {/* Payment legend */}
+      <div className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
+        <span className="text-green-400">✓</span>
+        <span>= entry fee received</span>
+      </div>
+
       <div className="space-y-2">
         {entries.map((entry, idx) => (
           <div key={entry.id} className="tier-card">
@@ -106,7 +127,12 @@ export default function LeaderboardPage() {
                   {idx + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-lg">{entry.name}</div>
+                  <div className="font-bold text-lg flex items-center gap-2">
+                    {entry.name}
+                    {hasPaid(entry.name) && (
+                      <span className="text-green-400 text-sm font-normal" title="Entry fee received">✓</span>
+                    )}
+                  </div>
                   {picksRevealed ? (
                     <div className="text-xs text-gray-400">
                       Teams: {getTeamPts(entry).toFixed(1)} pts · Players: {getPlayerPts(entry).toFixed(1)} pts
