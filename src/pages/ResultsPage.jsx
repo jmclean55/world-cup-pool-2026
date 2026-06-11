@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
-
-const ROUNDS = ['Group Stage', 'Round of 32', 'Round of 16', 'Quarterfinals', 'Semifinals', 'Final']
+import { ALL_TEAMS } from '../data/teams.js'
+import { ALL_PLAYERS } from '../data/players.js'
 
 export default function ResultsPage() {
   const [teamStats, setTeamStats] = useState([])
@@ -12,11 +12,34 @@ export default function ResultsPage() {
   useEffect(() => {
     async function load() {
       const [{ data: ts }, { data: ps }] = await Promise.all([
-        supabase.from('team_stats').select('*').order('odds', { ascending: true }),
-        supabase.from('player_stats').select('*').order('odds', { ascending: true }),
+        supabase.from('team_stats').select('*'),
+        supabase.from('player_stats').select('*'),
       ])
-      setTeamStats(ts || [])
-      setPlayerStats(ps || [])
+
+      // Merge DB stats onto full master lists so every team/player always shows
+      const tsMap = Object.fromEntries((ts || []).map(t => [t.team_name, t]))
+      const psMap = Object.fromEntries((ps || []).map(p => [p.player_name, p]))
+
+      const allTeams = ALL_TEAMS
+        .filter(t => !t.easterEgg)
+        .map(t => tsMap[t.name] || {
+          team_name: t.name, odds: t.odds,
+          group_wins: 0, group_draws: 0, group_losses: 0,
+          group_winner: false, knockout_advance: false,
+          round_of_32_wins: 0, round_of_16_wins: 0,
+          quarter_final_wins: 0, semi_final_wins: 0,
+          champion: false, upset_wins: 0,
+        })
+
+      const allPlayers = ALL_PLAYERS
+        .filter(p => !p.easterEgg)
+        .map(p => psMap[p.name] || {
+          player_name: p.name, odds: p.odds,
+          group_goals: 0, knockout_goals: 0,
+        })
+
+      setTeamStats(allTeams)
+      setPlayerStats(allPlayers)
       setLoading(false)
     }
     load()
