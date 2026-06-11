@@ -17,6 +17,7 @@ export default function PicksPage() {
   const [freddyVisible, setFreddyVisible] = useState(false)
   const [existingEntry, setExistingEntry] = useState(null)
   const [lookupName, setLookupName] = useState('')
+  const [lookupEmail, setLookupEmail] = useState('')
   const [lookupError, setLookupError] = useState('')
   const [mode, setMode] = useState('new') // 'new' | 'edit-lookup' | 'edit-form'
 
@@ -40,6 +41,15 @@ export default function PicksPage() {
       .single()
     if (!data) {
       setLookupError('No entry found with that name. Check the spelling and try again.')
+      return
+    }
+    // Require email verification before allowing edits
+    if (!data.email) {
+      setLookupError('This entry has no email on file. Contact the commissioner to make changes.')
+      return
+    }
+    if (data.email.toLowerCase() !== lookupEmail.trim().toLowerCase()) {
+      setLookupError('Email does not match our records. Please try again.')
       return
     }
     // Pre-fill the form with existing picks
@@ -163,7 +173,15 @@ export default function PicksPage() {
             type="text"
             value={lookupName}
             onChange={e => setLookupName(e.target.value)}
-            placeholder="Your name"
+            placeholder="Your name (as submitted)"
+            className="w-full bg-wc-dark border border-wc-border rounded-lg px-3 py-2 text-white focus:outline-none focus:border-wc-gold"
+            required
+          />
+          <input
+            type="email"
+            value={lookupEmail}
+            onChange={e => setLookupEmail(e.target.value)}
+            placeholder="Email address (to verify it's you)"
             className="w-full bg-wc-dark border border-wc-border rounded-lg px-3 py-2 text-white focus:outline-none focus:border-wc-gold"
             required
           />
