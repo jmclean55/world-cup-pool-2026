@@ -16,6 +16,8 @@ const PAID_NAMES = [
   'liz',
   'brian',
   'robbo',
+  'olivia',
+  'cat',
 ]
 
 function hasPaid(name) {
