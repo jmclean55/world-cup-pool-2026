@@ -18,6 +18,8 @@ export default function AdminPage() {
   const [saved, setSaved] = useState('')
   const [activeTab, setActiveTab] = useState('teams')
   const [picksLocked, setPicksLocked] = useState(false)
+  const [editingEntry, setEditingEntry] = useState(null)   // entry being edited
+  const [editForm, setEditForm] = useState({})             // draft changes
 
   function login(e) {
     e.preventDefault()
@@ -145,6 +147,32 @@ export default function AdminPage() {
 
     setSaving(false)
     setSaved(`Saved at ${new Date().toLocaleTimeString()}`)
+  }
+
+  function openEdit(entry) {
+    setEditingEntry(entry)
+    setEditForm({
+      name: entry.name,
+      email: entry.email || '',
+      team_tier1: entry.team_tier1, team_tier2: entry.team_tier2,
+      team_tier3: entry.team_tier3, team_tier4: entry.team_tier4,
+      team_tier5: entry.team_tier5, team_tier6: entry.team_tier6,
+      team_tier7: entry.team_tier7, team_tier8: entry.team_tier8,
+      player_tier1: entry.player_tier1, player_tier2: entry.player_tier2,
+      player_tier3: entry.player_tier3, player_tier4: entry.player_tier4,
+      player_tier5: entry.player_tier5,
+    })
+  }
+
+  async function saveEdit() {
+    const { error } = await supabase
+      .from('entries')
+      .update(editForm)
+      .eq('id', editingEntry.id)
+    if (error) { alert('Save failed: ' + error.message); return }
+    setEntries(prev => prev.map(e => e.id === editingEntry.id ? { ...e, ...editForm } : e))
+    setEditingEntry(null)
+    setEditForm({})
   }
 
   async function toggleLock() {
@@ -286,6 +314,12 @@ export default function AdminPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-wc-gold font-bold">{(e.total_points || 0).toFixed(1)} pts</span>
                   <button
+                    onClick={() => openEdit(e)}
+                    className="text-blue-400 hover:text-blue-300 text-xs border border-blue-800 hover:border-blue-600 rounded px-2 py-1 transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
                     onClick={async () => {
                       if (!confirm(`Delete entry for ${e.name}?`)) return
                       const { error } = await supabase.from('entries').delete().eq('id', e.id)
@@ -307,6 +341,81 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Edit entry modal */}
+      {editingEntry && (
+        <div className="fixed inset-0 bg-black/80 flex items-start justify-center z-50 overflow-y-auto py-8 px-4">
+          <div className="bg-wc-card border border-wc-border rounded-xl w-full max-w-lg p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-wc-gold">Edit: {editingEntry.name}</h3>
+              <button onClick={() => setEditingEntry(null)} className="text-gray-400 hover:text-white text-lg">✕</button>
+            </div>
+
+            {/* Name + email */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Name</label>
+                <input type="text" value={editForm.name || ''} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full bg-wc-dark border border-wc-border rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-wc-gold" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Email</label>
+                <input type="email" value={editForm.email || ''} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full bg-wc-dark border border-wc-border rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-wc-gold" />
+              </div>
+            </div>
+
+            {/* Team picks */}
+            <div>
+              <h4 className="text-sm font-semibold text-wc-gold mb-2">Team Picks</h4>
+              <div className="space-y-2">
+                {TEAM_TIERS.map(tier => (
+                  <div key={tier.tier} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 w-24 shrink-0">{tier.label.split('—')[0].trim()}</span>
+                    <select
+                      value={editForm[`team_tier${tier.tier}`] || ''}
+                      onChange={e => setEditForm(f => ({ ...f, [`team_tier${tier.tier}`]: e.target.value }))}
+                      className="flex-1 bg-wc-dark border border-wc-border rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-wc-gold"
+                    >
+                      <option value="">— pick —</option>
+                      {tier.teams.filter(t => !t.easterEgg).map(t => (
+                        <option key={t.name} value={t.name}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Player picks */}
+            <div>
+              <h4 className="text-sm font-semibold text-wc-gold mb-2">Player Picks</h4>
+              <div className="space-y-2">
+                {PLAYER_TIERS.map(tier => (
+                  <div key={tier.tier} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 w-24 shrink-0">{tier.label.split('—')[0].trim()}</span>
+                    <select
+                      value={editForm[`player_tier${tier.tier}`] || ''}
+                      onChange={e => setEditForm(f => ({ ...f, [`player_tier${tier.tier}`]: e.target.value }))}
+                      className="flex-1 bg-wc-dark border border-wc-border rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-wc-gold"
+                    >
+                      <option value="">— pick —</option>
+                      {tier.players.filter(p => !p.easterEgg).map(p => (
+                        <option key={p.name} value={p.name}>{p.name} ({p.country})</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button onClick={saveEdit} className="btn-primary flex-1">Save Changes</button>
+              <button onClick={() => setEditingEntry(null)} className="flex-1 border border-wc-border rounded-lg py-2 text-sm text-gray-400 hover:text-white transition-colors">Cancel</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
