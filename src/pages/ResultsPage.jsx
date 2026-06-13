@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { ALL_TEAMS } from '../data/teams.js'
 import { ALL_PLAYERS } from '../data/players.js'
+import { calcTeamPoints } from '../data/scoring.js'
 
 export default function ResultsPage() {
   const [teamStats, setTeamStats] = useState([])
@@ -87,19 +88,29 @@ export default function ResultsPage() {
                 <th className="text-center py-2 px-2">L</th>
                 <th className="text-center py-2 px-2">Upset Wins</th>
                 <th className="text-left py-2 px-3">Status</th>
+                <th className="text-center py-2 px-3">Pool Pts</th>
               </tr>
             </thead>
             <tbody>
               {teamStats.map(t => {
                 const status = teamStatus(t)
+                const pts = calcTeamPoints({
+                  groupWins: t.group_wins, groupDraws: t.group_draws,
+                  groupWinnerBonus: t.group_winner ? 1 : 0,
+                  knockoutAdvance: t.knockout_advance ? 1 : 0,
+                  roundOf32Wins: t.round_of_32_wins, roundOf16Wins: t.round_of_16_wins,
+                  quarterFinalWins: t.quarter_final_wins, semiFinalWins: t.semi_final_wins,
+                  champion: t.champion, upsetWins: t.upset_wins,
+                })
                 return (
-                  <tr key={t.id} className="border-b border-wc-border/40 hover:bg-wc-card/50">
+                  <tr key={t.id || t.team_name} className="border-b border-wc-border/40 hover:bg-wc-card/50">
                     <td className="py-2 px-3 font-medium">{t.team_name}</td>
                     <td className="py-2 px-2 text-center text-green-400">{t.group_wins}</td>
                     <td className="py-2 px-2 text-center text-yellow-400">{t.group_draws}</td>
                     <td className="py-2 px-2 text-center text-red-400">{t.group_losses}</td>
                     <td className="py-2 px-2 text-center text-wc-gold">{t.upset_wins || 0}</td>
                     <td className={`py-2 px-3 font-medium ${status.color}`}>{status.label}</td>
+                    <td className="py-2 px-3 text-center font-bold text-wc-gold">{pts > 0 ? pts : '—'}</td>
                   </tr>
                 )
               })}

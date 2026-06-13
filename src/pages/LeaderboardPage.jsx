@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { TEAM_TIERS } from '../data/teams.js'
 import { PLAYER_TIERS } from '../data/players.js'
+import { SCORING } from '../data/scoring.js'
+
+function calcTeamPts(s) {
+  if (!s) return 0
+  return (s.group_wins || 0) * SCORING.groupWin
+    + (s.group_draws || 0) * SCORING.groupDraw
+    + (s.group_winner ? SCORING.groupWinnerBonus : 0)
+    + (s.knockout_advance ? SCORING.knockoutAdvance : 0)
+    + (s.round_of_32_wins || 0) * SCORING.roundOf32Win
+    + (s.round_of_16_wins || 0) * SCORING.roundOf16Win
+    + (s.quarter_final_wins || 0) * SCORING.quarterFinalWin
+    + (s.semi_final_wins || 0) * SCORING.semiFinalWin
+    + (s.champion ? SCORING.champion : 0)
+    + (s.upset_wins || 0) * SCORING.upsetBonus
+}
 
 const LOCK_TIME = new Date('2026-06-11T19:00:00Z')
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
@@ -164,6 +179,7 @@ export default function LeaderboardPage() {
                   {TEAM_TIERS.map(tier => {
                     const pick = entry[`team_tier${tier.tier}`]
                     const stats = teamStats[pick] || {}
+                    const pts = calcTeamPts(stats)
                     return (
                       <div key={tier.tier} className="flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0">
                         <div>
@@ -172,6 +188,7 @@ export default function LeaderboardPage() {
                           {stats.champion && <span className="ml-1 text-wc-gold text-xs">🏆</span>}
                           {stats.knockout_advance && !stats.champion && <span className="ml-1 text-xs text-green-400">KO</span>}
                         </div>
+                        <span className="text-gray-400">{pts > 0 ? `${pts}pts` : '—'}</span>
                       </div>
                     )
                   })}
@@ -181,14 +198,15 @@ export default function LeaderboardPage() {
                   {PLAYER_TIERS.map(tier => {
                     const pick = entry[`player_tier${tier.tier}`]
                     const stats = playerStats[pick] || {}
-                    const goals = (stats.group_goals || 0) + (stats.knockout_goals || 0)
+                    const pts = (stats.group_goals || 0) * SCORING.playerGroupGoal
+                      + (stats.knockout_goals || 0) * SCORING.playerKnockoutGoal
                     return (
                       <div key={tier.tier} className="flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0">
                         <div>
                           <span className="text-gray-400 text-xs">T{tier.tier} </span>
                           <span className="font-medium">{pick}</span>
                         </div>
-                        <span className="text-gray-400">{goals > 0 ? `${goals}G` : '—'}</span>
+                        <span className="text-gray-400">{pts > 0 ? `${pts.toFixed(1)}pts` : '—'}</span>
                       </div>
                     )
                   })}
