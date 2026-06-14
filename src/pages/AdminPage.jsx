@@ -263,16 +263,16 @@ export default function AdminPage() {
 
       {activeTab === 'teams' && (
         <div className="space-y-1">
-          <div className="grid grid-cols-[1fr_repeat(3,3rem)_repeat(2,5rem)_repeat(4,3.5rem)_4rem] gap-2 text-xs text-gray-500 px-3 py-1">
+          <div className="grid grid-cols-[1fr_repeat(3,3rem)_repeat(2,5rem)_repeat(4,3.5rem)_3.5rem_4rem] gap-2 text-xs text-gray-500 px-3 py-1">
             <span>Team</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span>
             <span className="text-center">1st</span><span className="text-center">KO</span>
             <span className="text-center">R32</span><span className="text-center">R16</span><span className="text-center">QF</span><span className="text-center">SF</span>
-            <span className="text-center">🏆</span>
+            <span className="text-center">Upset</span><span className="text-center">🏆</span>
           </div>
           {ALL_TEAMS.map(t => {
             const s = teamStats[t.name] || {}
             return (
-              <div key={t.name} className="tier-card grid grid-cols-[1fr_repeat(3,3rem)_repeat(2,5rem)_repeat(4,3.5rem)_4rem] gap-2 items-center py-2">
+              <div key={t.name} className="tier-card grid grid-cols-[1fr_repeat(3,3rem)_repeat(2,5rem)_repeat(4,3.5rem)_3.5rem_4rem] gap-2 items-center py-2">
                 <span className="font-medium text-sm truncate">{t.name}</span>
                 {['group_wins','group_draws','group_losses'].map(f => (
                   <input key={f} type="number" min="0" max="9" value={s[f] || 0}
@@ -291,6 +291,10 @@ export default function AdminPage() {
                     className="w-full bg-wc-dark border border-wc-border rounded px-1 py-1 text-center text-sm focus:outline-none focus:border-wc-gold"
                   />
                 ))}
+                <input type="number" min="0" max="9" value={s.upset_wins || 0}
+                  onChange={e => updateTeam(t.name, 'upset_wins', parseInt(e.target.value) || 0)}
+                  className="w-full bg-wc-dark border border-yellow-800 rounded px-1 py-1 text-center text-sm text-yellow-400 focus:outline-none focus:border-yellow-500"
+                />
                 <button onClick={() => updateTeam(t.name, 'champion', !s.champion)}
                   className={`rounded px-2 py-1 text-xs font-medium transition-colors ${s.champion ? 'bg-wc-gold text-black' : 'bg-wc-dark border border-wc-border text-gray-500'}`}
                 >🏆</button>
