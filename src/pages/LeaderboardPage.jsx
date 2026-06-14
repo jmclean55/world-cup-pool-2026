@@ -38,6 +38,7 @@ const PAID_NAMES = [
   'travis',
   'wyatt',
   'will',
+  'jake russo',
 ]
 
 function hasPaid(name) {
