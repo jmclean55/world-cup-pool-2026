@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase.js'
 import { TEAM_TIERS } from '../data/teams.js'
 import { PLAYER_TIERS } from '../data/players.js'
 import { SCORING } from '../data/scoring.js'
+import { entryGroupGamesRemaining } from '../data/schedule.js'
 
 function calcTeamPts(s) {
   if (!s) return 0
@@ -155,6 +156,7 @@ export default function LeaderboardPage() {
                   {picksRevealed ? (
                     <div className="text-xs text-gray-400">
                       Teams: {getTeamPts(entry).toFixed(1)} pts · Players: {getPlayerPts(entry).toFixed(1)} pts
+                      <span className="ml-2 text-gray-500">· {entryGroupGamesRemaining(entry)} group games left</span>
                     </div>
                   ) : (
                     <div className="text-xs text-gray-500">Picks hidden until kickoff</div>
