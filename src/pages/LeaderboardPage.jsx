@@ -186,6 +186,7 @@ export default function LeaderboardPage() {
                     const pick = entry[`team_tier${tier.tier}`]
                     const stats = teamStats[pick] || {}
                     const pts = calcTeamPts(stats)
+                    const upsets = stats.upset_wins || 0
                     return (
                       <div key={tier.tier} className="flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0">
                         <div>
@@ -193,6 +194,7 @@ export default function LeaderboardPage() {
                           <span className="font-medium">{pick}</span>
                           {stats.champion && <span className="ml-1 text-wc-gold text-xs">🏆</span>}
                           {stats.knockout_advance && !stats.champion && <span className="ml-1 text-xs text-green-400">KO</span>}
+                          {upsets > 0 && <span className="ml-1 text-xs text-yellow-400" title="Upset bonus">⚡{upsets}</span>}
                         </div>
                         <span className="text-gray-400">{pts > 0 ? `${pts}pts` : '—'}</span>
                       </div>
