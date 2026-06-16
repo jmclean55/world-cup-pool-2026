@@ -151,11 +151,14 @@ export default function LeaderboardPage() {
                   {idx + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-lg flex items-center gap-2">
+                  <div className="font-bold text-lg flex items-center gap-2 flex-wrap">
                     {entry.name}
                     {hasPaid(entry.name) && (
                       <span className="text-green-400 text-sm font-normal" title="Entry fee received">✓</span>
                     )}
+                    {idx === 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-wc-gold/20 text-wc-gold border border-wc-gold/40">💰 $500</span>}
+                    {idx === 1 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-400/10 text-gray-300 border border-gray-400/30">💰 $250</span>}
+                    {idx === 2 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-700/20 text-amber-600 border border-amber-700/30">💰 $50</span>}
                   </div>
                   {picksRevealed ? (
                     <div className="text-xs text-gray-400">
