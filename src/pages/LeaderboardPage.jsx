@@ -39,6 +39,7 @@ const PAID_NAMES = [
   'wyatt',
   'will',
   'jake russo',
+  'bob seeberger',
 ]
 
 function hasPaid(name) {
