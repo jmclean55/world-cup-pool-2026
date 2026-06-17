@@ -133,9 +133,13 @@ export default function LeaderboardPage() {
       )}
 
       {/* Payment legend */}
-      <div className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
+      <div className="text-xs text-gray-500 mb-1 flex items-center gap-1.5">
         <span className="text-green-400">✓</span>
         <span>= entry fee received</span>
+      </div>
+      <div className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
+        <span>🤝</span>
+        <span>Tiebreaker: most combined goals scored by selected teams</span>
       </div>
 
       <div className="space-y-2">
