@@ -313,7 +313,10 @@ export default function AdminPage() {
             const s = playerStats[p.name] || {}
             return (
               <div key={p.name} className="tier-card grid grid-cols-[1fr_8rem_8rem] gap-4 items-center py-2">
-                <span className="font-medium text-sm">{p.name}</span>
+                <div>
+                  <div className="font-medium text-sm">{p.name}</div>
+                  <div className="text-xs text-gray-500">{p.country}</div>
+                </div>
                 <input type="number" min="0" step="1" value={s.group_goals || 0}
                   onChange={e => updatePlayer(p.name, 'group_goals', parseInt(e.target.value) || 0)}
                   className="bg-wc-dark border border-wc-border rounded px-2 py-1 text-center text-sm focus:outline-none focus:border-wc-gold"
