@@ -19,12 +19,13 @@ function calcTeamPts(s) {
     + (s.upset_wins || 0) * SCORING.upsetBonus
 }
 
+const FORCE_ELIMINATED = new Set(['Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama'])
+
 // Max additional points a team can still earn from here
-function teamMaxRemaining(s) {
+function teamMaxRemaining(teamName, s) {
   if (!s) return 0
-  // If already champion, nothing left
   if (s.champion) return 0
-  // Only consider eliminated once all 3 group games are recorded
+  if (FORCE_ELIMINATED.has(teamName)) return 0
   const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
   if (playedGroupGames >= 3 && !s.knockout_advance) return 0
   // Still in group stage or qualified — calculate remaining possible
@@ -41,8 +42,9 @@ function teamMaxRemaining(s) {
 function calcMaxPts(entry, teamStats, playerStats) {
   let max = (entry.total_points || 0)
   for (let i = 1; i <= 8; i++) {
-    const s = teamStats[entry[`team_tier${i}`]]
-    max += teamMaxRemaining(s)
+    const teamName = entry[`team_tier${i}`]
+    const s = teamStats[teamName]
+    max += teamMaxRemaining(teamName, s)
   }
   // Players: each active player can still score — assume ~5 more knockout goals max as ceiling
   // Use a simple flat bonus: 5 knockout goals * 1.5 pts each per remaining player

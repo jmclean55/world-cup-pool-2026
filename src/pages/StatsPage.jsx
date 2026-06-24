@@ -69,6 +69,9 @@ export default function StatsPage() {
     )
   }
 
+  // Teams confirmed eliminated before their 3rd group game is entered
+  const FORCE_ELIMINATED = new Set(['Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama'])
+
   // Count how many entries have each team (across all tiers)
   const teamPickCounts = {}
   entries.forEach(e => {
@@ -83,7 +86,7 @@ export default function StatsPage() {
     .map(([name, count]) => {
       const s = teamStats[name] || {}
       const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-      const eliminated = playedGroupGames >= 3 && !s.knockout_advance && !s.champion
+      const eliminated = FORCE_ELIMINATED.has(name) || (playedGroupGames >= 3 && !s.knockout_advance && !s.champion)
       return { name, count, s, eliminated }
     })
     .filter(t => !t.eliminated)
@@ -93,7 +96,7 @@ export default function StatsPage() {
     .map(([name, count]) => {
       const s = teamStats[name] || {}
       const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-      const eliminated = playedGroupGames >= 3 && !s.knockout_advance && !s.champion
+      const eliminated = FORCE_ELIMINATED.has(name) || (playedGroupGames >= 3 && !s.knockout_advance && !s.champion)
       return { name, count, eliminated }
     })
     .filter(t => t.eliminated)
