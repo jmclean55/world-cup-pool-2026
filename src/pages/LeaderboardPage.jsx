@@ -232,11 +232,14 @@ export default function LeaderboardPage() {
                     const stats = teamStats[pick] || {}
                     const pts = calcTeamPts(stats)
                     const upsets = stats.upset_wins || 0
+                    const playedGroupGames = (stats.group_wins || 0) + (stats.group_draws || 0) + (stats.group_losses || 0)
+                    const isEliminated = FORCE_ELIMINATED.has(pick) || (playedGroupGames >= 3 && !stats.knockout_advance && !stats.champion)
                     return (
-                      <div key={tier.tier} className="flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0">
+                      <div key={tier.tier} className={`flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0 ${isEliminated ? 'opacity-50' : ''}`}>
                         <div>
                           <span className="text-gray-400 text-xs">T{tier.tier} </span>
-                          <span className="font-medium">{pick}</span>
+                          <span className={`font-medium ${isEliminated ? 'line-through text-gray-500' : ''}`}>{pick}</span>
+                          {isEliminated && <span className="ml-1 text-xs text-red-500" title="Eliminated">✕</span>}
                           {stats.champion && <span className="ml-1 text-wc-gold text-xs">🏆</span>}
                           {stats.knockout_advance && !stats.champion && <span className="ml-1 text-xs text-green-400">KO</span>}
                           {upsets > 0 && <span className="ml-1 text-xs text-yellow-400" title="Upset bonus">⚡{upsets}</span>}
