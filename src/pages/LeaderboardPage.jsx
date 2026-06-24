@@ -233,7 +233,7 @@ export default function LeaderboardPage() {
                     const pts = calcTeamPts(stats)
                     const upsets = stats.upset_wins || 0
                     const playedGroupGames = (stats.group_wins || 0) + (stats.group_draws || 0) + (stats.group_losses || 0)
-                    const isEliminated = FORCE_ELIMINATED.has(pick) || (playedGroupGames >= 3 && !stats.knockout_advance && !stats.champion)
+                    const isEliminated = playedGroupGames >= 3 && !stats.knockout_advance && !stats.champion
                     return (
                       <div key={tier.tier} className={`flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0 ${isEliminated ? 'opacity-50' : ''}`}>
                         <div>
