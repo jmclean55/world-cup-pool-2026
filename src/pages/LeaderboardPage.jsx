@@ -19,6 +19,40 @@ function calcTeamPts(s) {
     + (s.upset_wins || 0) * SCORING.upsetBonus
 }
 
+// Max additional points a team can still earn from here
+function teamMaxRemaining(s) {
+  if (!s) return 0
+  // If already champion, nothing left
+  if (s.champion) return 0
+  // If eliminated (has group stage results but no knockout_advance), nothing left
+  const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
+  if (playedGroupGames > 0 && !s.knockout_advance) return 0
+  // Still in group stage or qualified — calculate remaining possible
+  let max = 0
+  if (!s.knockout_advance) max += SCORING.knockoutAdvance  // can still qualify
+  if (!s.round_of_32_wins) max += SCORING.roundOf32Win
+  if (!s.round_of_16_wins) max += SCORING.roundOf16Win
+  if (!s.quarter_final_wins) max += SCORING.quarterFinalWin
+  if (!s.semi_final_wins) max += SCORING.semiFinalWin
+  max += SCORING.champion
+  return max
+}
+
+function calcMaxPts(entry, teamStats, playerStats) {
+  let max = (entry.total_points || 0)
+  for (let i = 1; i <= 8; i++) {
+    const s = teamStats[entry[`team_tier${i}`]]
+    max += teamMaxRemaining(s)
+  }
+  // Players: each active player can still score — assume ~5 more knockout goals max as ceiling
+  // Use a simple flat bonus: 5 knockout goals * 1.5 pts each per remaining player
+  for (let i = 1; i <= 5; i++) {
+    const p = playerStats[entry[`player_tier${i}`]]
+    if (p !== undefined) max += 5 * SCORING.playerKnockoutGoal
+  }
+  return max
+}
+
 const LOCK_TIME = new Date('2026-06-11T19:00:00Z')
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
 
@@ -169,6 +203,7 @@ export default function LeaderboardPage() {
                     <div className="text-xs text-gray-400">
                       Teams: {getTeamPts(entry).toFixed(1)} pts · Players: {getPlayerPts(entry).toFixed(1)} pts
                       <span className="ml-2 text-gray-500">· {entryGroupGamesRemaining(entry)} group games left</span>
+                      <span className="ml-2 text-blue-400/70">· max {calcMaxPts(entry, teamStats, playerStats).toFixed(0)} pts</span>
                     </div>
                   ) : (
                     <div className="text-xs text-gray-500">Picks hidden until kickoff</div>
