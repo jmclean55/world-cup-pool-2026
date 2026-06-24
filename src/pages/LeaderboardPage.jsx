@@ -241,6 +241,7 @@ export default function LeaderboardPage() {
                           <span className={`font-medium ${isEliminated ? 'line-through text-gray-500' : ''}`}>{pick}</span>
                           {isEliminated && <span className="ml-1 text-xs text-red-500" title="Eliminated">✕</span>}
                           {stats.champion && <span className="ml-1 text-wc-gold text-xs">🏆</span>}
+                          {stats.group_winner && !stats.champion && <span className="ml-1 text-xs" title="Group winner">⭐</span>}
                           {stats.knockout_advance && !stats.champion && <span className="ml-1 text-xs text-green-400">KO</span>}
                           {upsets > 0 && <span className="ml-1 text-xs text-yellow-400" title="Upset bonus">⚡{upsets}</span>}
                         </div>
