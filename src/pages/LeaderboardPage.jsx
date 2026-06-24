@@ -24,9 +24,9 @@ function teamMaxRemaining(s) {
   if (!s) return 0
   // If already champion, nothing left
   if (s.champion) return 0
-  // If eliminated (has group stage results but no knockout_advance), nothing left
+  // Only consider eliminated once all 3 group games are recorded
   const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-  if (playedGroupGames > 0 && !s.knockout_advance) return 0
+  if (playedGroupGames >= 3 && !s.knockout_advance) return 0
   // Still in group stage or qualified — calculate remaining possible
   let max = 0
   if (!s.knockout_advance) max += SCORING.knockoutAdvance  // can still qualify

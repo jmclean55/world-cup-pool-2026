@@ -83,7 +83,7 @@ export default function StatsPage() {
     .map(([name, count]) => {
       const s = teamStats[name] || {}
       const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-      const eliminated = playedGroupGames > 0 && !s.knockout_advance && !s.champion
+      const eliminated = playedGroupGames >= 3 && !s.knockout_advance && !s.champion
       return { name, count, s, eliminated }
     })
     .filter(t => !t.eliminated)
@@ -93,7 +93,7 @@ export default function StatsPage() {
     .map(([name, count]) => {
       const s = teamStats[name] || {}
       const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-      const eliminated = playedGroupGames > 0 && !s.knockout_advance && !s.champion
+      const eliminated = playedGroupGames >= 3 && !s.knockout_advance && !s.champion
       return { name, count, eliminated }
     })
     .filter(t => t.eliminated)
