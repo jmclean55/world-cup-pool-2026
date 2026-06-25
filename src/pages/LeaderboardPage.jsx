@@ -79,6 +79,7 @@ const PAID_NAMES = [
   'dan seeberger',
   'fatorma',
   'shain',
+  'milmoe',
 ]
 
 function hasPaid(name) {
