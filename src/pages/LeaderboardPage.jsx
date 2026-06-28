@@ -256,6 +256,18 @@ export default function LeaderboardPage() {
                       </div>
                     )
                   })}
+                  {(() => {
+                    const tiebreaker = [1,2,3,4,5,6,7,8].reduce((sum, i) => {
+                      const pick = entry[`team_tier${i}`]
+                      return sum + (teamStats[pick]?.goals_for || 0)
+                    }, 0)
+                    return (
+                      <div className="flex justify-between text-sm py-1.5 mt-1 border-t border-wc-border/60">
+                        <span className="text-gray-400">🤝 Tiebreaker (team goals)</span>
+                        <span className="text-wc-gold font-semibold">{tiebreaker}</span>
+                      </div>
+                    )
+                  })()}
                 </div>
                 <div>
                   <h4 className="font-semibold text-wc-gold mb-2 text-sm uppercase tracking-wide">Players</h4>

@@ -49,7 +49,7 @@ export default function AdminPage() {
           group_winner: false, knockout_advance: false,
           round_of_32_wins: 0, round_of_16_wins: 0,
           quarter_final_wins: 0, semi_final_wins: 0,
-          champion: false, upset_wins: 0,
+          champion: false, upset_wins: 0, goals_for: 0,
         }
       })
 
@@ -103,6 +103,7 @@ export default function AdminPage() {
       semi_final_wins: Number(t.semi_final_wins) || 0,
       champion: Boolean(t.champion),
       upset_wins: Number(t.upset_wins) || 0,
+      goals_for: Number(t.goals_for) || 0,
     }))
 
     const playerRows = Object.values(playerStats).map(p => ({
@@ -263,8 +264,9 @@ export default function AdminPage() {
 
       {activeTab === 'teams' && (
         <div className="space-y-1">
-          <div className="grid grid-cols-[1fr_repeat(3,3rem)_repeat(2,5rem)_repeat(4,3.5rem)_3.5rem_4rem] gap-2 text-xs text-gray-500 px-3 py-1">
+          <div className="grid grid-cols-[1fr_repeat(3,3rem)_3rem_repeat(2,5rem)_repeat(4,3.5rem)_3.5rem_4rem] gap-2 text-xs text-gray-500 px-3 py-1">
             <span>Team</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span>
+            <span className="text-center">GF</span>
             <span className="text-center">1st</span><span className="text-center">KO</span>
             <span className="text-center">R32</span><span className="text-center">R16</span><span className="text-center">QF</span><span className="text-center">SF</span>
             <span className="text-center">Upset</span><span className="text-center">🏆</span>
@@ -272,7 +274,7 @@ export default function AdminPage() {
           {ALL_TEAMS.map(t => {
             const s = teamStats[t.name] || {}
             return (
-              <div key={t.name} className="tier-card grid grid-cols-[1fr_repeat(3,3rem)_repeat(2,5rem)_repeat(4,3.5rem)_3.5rem_4rem] gap-2 items-center py-2">
+              <div key={t.name} className="tier-card grid grid-cols-[1fr_repeat(3,3rem)_3rem_repeat(2,5rem)_repeat(4,3.5rem)_3.5rem_4rem] gap-2 items-center py-2">
                 <span className="font-medium text-sm truncate">{t.name}</span>
                 {['group_wins','group_draws','group_losses'].map(f => (
                   <input key={f} type="number" min="0" max="9" value={s[f] || 0}
@@ -280,6 +282,10 @@ export default function AdminPage() {
                     className="w-full bg-wc-dark border border-wc-border rounded px-1 py-1 text-center text-sm focus:outline-none focus:border-wc-gold"
                   />
                 ))}
+                <input type="number" min="0" max="99" value={s.goals_for || 0}
+                  onChange={e => updateTeam(t.name, 'goals_for', parseInt(e.target.value) || 0)}
+                  className="w-full bg-wc-dark border border-wc-border rounded px-1 py-1 text-center text-sm focus:outline-none focus:border-wc-gold"
+                />
                 {[['group_winner','1st'],['knockout_advance','KO']].map(([f, label]) => (
                   <button key={f} onClick={() => updateTeam(t.name, f, !s[f])}
                     className={`rounded px-2 py-1 text-xs font-medium transition-colors ${s[f] ? 'bg-green-600 text-white' : 'bg-wc-dark border border-wc-border text-gray-500'}`}
