@@ -82,6 +82,7 @@ const PAID_NAMES = [
   'jake schmidt',
   'weston g',
   '9093',
+  'jeff',
   'bob seeberger',
   'dan seeberger',
   'fatorma',
