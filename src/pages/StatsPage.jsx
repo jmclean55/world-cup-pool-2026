@@ -71,7 +71,12 @@ export default function StatsPage() {
 
   // Teams confirmed eliminated. 48-team format: top 2 per group + 8 best 3rd-place teams advance,
   // so a 3rd-place finisher is NOT eliminated until the cross-group tally is in — admin curates this set.
-  const FORCE_ELIMINATED = new Set(['Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama'])
+  const FORCE_ELIMINATED = new Set([
+    'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
+    'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
+    'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
+    'South Africa',
+  ])
 
   // Count how many entries have each team (across all tiers)
   const teamPickCounts = {}

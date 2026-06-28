@@ -19,7 +19,12 @@ function calcTeamPts(s) {
     + (s.upset_wins || 0) * SCORING.upsetBonus
 }
 
-const FORCE_ELIMINATED = new Set(['Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama'])
+const FORCE_ELIMINATED = new Set([
+  'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
+  'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
+  'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
+  'South Africa',
+])
 
 // Max additional points a team can still earn from here.
 // 48-team format: 3rd-place finishers may still advance via the 8-best-3rds bracket,
