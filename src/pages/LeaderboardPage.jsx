@@ -120,6 +120,18 @@ export default function LeaderboardPage() {
   function getTeamPts(entry) { return entry.team_points || 0 }
   function getPlayerPts(entry) { return entry.player_points || 0 }
 
+  function tiebreakerGoals(entry) {
+    let sum = 0
+    for (let i = 1; i <= 8; i++) sum += (teamStats[entry[`team_tier${i}`]]?.goals_for || 0)
+    return sum
+  }
+
+  const sortedEntries = [...entries].sort((a, b) => {
+    const ptsDiff = (b.total_points || 0) - (a.total_points || 0)
+    if (ptsDiff !== 0) return ptsDiff
+    return tiebreakerGoals(b) - tiebreakerGoals(a)
+  })
+
   if (loading) return <div className="text-center py-24 text-gray-400">Loading leaderboard...</div>
 
   if (entries.length === 0) {
@@ -187,7 +199,7 @@ export default function LeaderboardPage() {
       </div>
 
       <div className="space-y-2">
-        {entries.map((entry, idx) => (
+        {sortedEntries.map((entry, idx) => (
           <div key={entry.id} className="tier-card">
             <button
               className="w-full text-left"
