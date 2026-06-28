@@ -69,7 +69,8 @@ export default function StatsPage() {
     )
   }
 
-  // Teams confirmed eliminated before their 3rd group game is entered
+  // Teams confirmed eliminated. 48-team format: top 2 per group + 8 best 3rd-place teams advance,
+  // so a 3rd-place finisher is NOT eliminated until the cross-group tally is in — admin curates this set.
   const FORCE_ELIMINATED = new Set(['Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama'])
 
   // Count how many entries have each team (across all tiers)
@@ -81,24 +82,15 @@ export default function StatsPage() {
     }
   })
 
-  // Teams still alive = knockout_advance is true and not yet champion/eliminated
+  const isEliminated = (name) => FORCE_ELIMINATED.has(name)
+
   const aliveTeams = Object.entries(teamPickCounts)
-    .map(([name, count]) => {
-      const s = teamStats[name] || {}
-      const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-      const eliminated = FORCE_ELIMINATED.has(name) || (playedGroupGames >= 3 && !s.knockout_advance && !s.champion && !s.group_winner)
-      return { name, count, s, eliminated }
-    })
+    .map(([name, count]) => ({ name, count, s: teamStats[name] || {}, eliminated: isEliminated(name) }))
     .filter(t => !t.eliminated)
     .sort((a, b) => b.count - a.count)
 
   const eliminatedTeams = Object.entries(teamPickCounts)
-    .map(([name, count]) => {
-      const s = teamStats[name] || {}
-      const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-      const eliminated = FORCE_ELIMINATED.has(name) || (playedGroupGames >= 3 && !s.knockout_advance && !s.champion && !s.group_winner)
-      return { name, count, eliminated }
-    })
+    .map(([name, count]) => ({ name, count, eliminated: isEliminated(name) }))
     .filter(t => t.eliminated)
     .sort((a, b) => b.count - a.count)
 
