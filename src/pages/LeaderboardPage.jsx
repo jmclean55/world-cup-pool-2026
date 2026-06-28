@@ -21,14 +21,13 @@ function calcTeamPts(s) {
 
 const FORCE_ELIMINATED = new Set(['Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama'])
 
-// Max additional points a team can still earn from here
+// Max additional points a team can still earn from here.
+// 48-team format: 3rd-place finishers may still advance via the 8-best-3rds bracket,
+// so don't auto-eliminate after group play — rely on admin's FORCE_ELIMINATED list.
 function teamMaxRemaining(teamName, s) {
   if (!s) return 0
   if (s.champion) return 0
   if (FORCE_ELIMINATED.has(teamName)) return 0
-  const playedGroupGames = (s.group_wins || 0) + (s.group_draws || 0) + (s.group_losses || 0)
-  if (playedGroupGames >= 3 && !s.knockout_advance) return 0
-  // Still in group stage or qualified — calculate remaining possible
   let max = 0
   if (!s.knockout_advance) max += SCORING.knockoutAdvance  // can still qualify
   if (!s.round_of_32_wins) max += SCORING.roundOf32Win
@@ -75,6 +74,9 @@ const PAID_NAMES = [
   'wyatt',
   'will',
   'jake russo',
+  'jake schmidt',
+  'weston g',
+  '9093',
   'bob seeberger',
   'dan seeberger',
   'fatorma',
@@ -238,8 +240,7 @@ export default function LeaderboardPage() {
                     const stats = teamStats[pick] || {}
                     const pts = calcTeamPts(stats)
                     const upsets = stats.upset_wins || 0
-                    const playedGroupGames = (stats.group_wins || 0) + (stats.group_draws || 0) + (stats.group_losses || 0)
-                    const isEliminated = FORCE_ELIMINATED.has(pick) || (playedGroupGames >= 3 && !stats.knockout_advance && !stats.champion && !stats.group_winner)
+                    const isEliminated = FORCE_ELIMINATED.has(pick)
                     return (
                       <div key={tier.tier} className={`flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0 ${isEliminated ? 'opacity-50' : ''}`}>
                         <div>
