@@ -207,6 +207,10 @@ export default function LeaderboardPage() {
         <span className="text-green-400">✓</span>
         <span>= entry fee received</span>
       </div>
+      <div className="text-xs text-gray-500 mb-1 flex items-center gap-1.5">
+        <span className="text-red-500 font-bold">✕</span>
+        <span>= mathematically eliminated (cannot catch leader)</span>
+      </div>
       <div className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
         <span>🤝</span>
         <span>Tiebreaker: most combined goals scored by selected teams</span>
@@ -235,7 +239,7 @@ export default function LeaderboardPage() {
                       <span className="text-green-400 text-sm font-normal no-underline" title="Entry fee received">✓</span>
                     )}
                     {mathEliminated && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400 border border-red-800/50 no-underline" title="Cannot mathematically catch the leader">✕ Eliminated</span>
+                      <span className="text-red-500 text-sm font-bold no-underline" title="Mathematically eliminated — cannot catch the leader">✕</span>
                     )}
                     {!mathEliminated && idx === 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-wc-gold/20 text-wc-gold border border-wc-gold/40">💰 $500</span>}
                     {!mathEliminated && idx === 1 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-400/10 text-gray-300 border border-gray-400/30">💰 $250</span>}
