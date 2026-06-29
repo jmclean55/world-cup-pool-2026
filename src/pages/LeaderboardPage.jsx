@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { TEAM_TIERS } from '../data/teams.js'
-import { PLAYER_TIERS } from '../data/players.js'
+import { PLAYER_TIERS, ALL_PLAYERS } from '../data/players.js'
+
+const PLAYER_COUNTRY = Object.fromEntries(ALL_PLAYERS.map(p => [p.name, p.country]))
 import { SCORING } from '../data/scoring.js'
 import { entryGroupGamesRemaining } from '../data/schedule.js'
 
@@ -23,7 +25,7 @@ const FORCE_ELIMINATED = new Set([
   'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
   'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
   'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
-  'South Africa',
+  'South Africa', 'Japan',
 ])
 
 // Max additional points a team can still earn from here.
@@ -50,11 +52,13 @@ function calcMaxPts(entry, teamStats, playerStats) {
     const s = teamStats[teamName]
     max += teamMaxRemaining(teamName, s)
   }
-  // Players: each active player can still score — assume ~5 more knockout goals max as ceiling
-  // Use a simple flat bonus: 5 knockout goals * 1.5 pts each per remaining player
+  // Players: ceiling only counts if their country is still in the tournament.
   for (let i = 1; i <= 5; i++) {
-    const p = playerStats[entry[`player_tier${i}`]]
-    if (p !== undefined) max += 5 * SCORING.playerKnockoutGoal
+    const playerName = entry[`player_tier${i}`]
+    if (!playerName || playerStats[playerName] === undefined) continue
+    const country = PLAYER_COUNTRY[playerName]
+    if (country && FORCE_ELIMINATED.has(country)) continue
+    max += 5 * SCORING.playerKnockoutGoal
   }
   return max
 }
@@ -140,6 +144,8 @@ export default function LeaderboardPage() {
     return tiebreakerGoals(b) - tiebreakerGoals(a)
   })
 
+  const leaderPts = sortedEntries.length > 0 ? (sortedEntries[0].total_points || 0) : 0
+
   if (loading) return <div className="text-center py-24 text-gray-400">Loading leaderboard...</div>
 
   if (entries.length === 0) {
@@ -207,8 +213,11 @@ export default function LeaderboardPage() {
       </div>
 
       <div className="space-y-2">
-        {sortedEntries.map((entry, idx) => (
-          <div key={entry.id} className="tier-card">
+        {sortedEntries.map((entry, idx) => {
+          const maxPts = calcMaxPts(entry, teamStats, playerStats)
+          const mathEliminated = picksRevealed && maxPts < leaderPts
+          return (
+          <div key={entry.id} className={`tier-card ${mathEliminated ? 'opacity-50' : ''}`}>
             <button
               className="w-full text-left"
               onClick={() => picksRevealed && setExpanded(expanded === entry.id ? null : entry.id)}
@@ -220,20 +229,23 @@ export default function LeaderboardPage() {
                   {idx + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-lg flex items-center gap-2 flex-wrap">
+                  <div className={`font-bold text-lg flex items-center gap-2 flex-wrap ${mathEliminated ? 'line-through text-gray-500' : ''}`}>
                     {entry.name}
                     {hasPaid(entry.name) && (
-                      <span className="text-green-400 text-sm font-normal" title="Entry fee received">✓</span>
+                      <span className="text-green-400 text-sm font-normal no-underline" title="Entry fee received">✓</span>
                     )}
-                    {idx === 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-wc-gold/20 text-wc-gold border border-wc-gold/40">💰 $500</span>}
-                    {idx === 1 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-400/10 text-gray-300 border border-gray-400/30">💰 $250</span>}
-                    {idx === 2 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-700/20 text-amber-600 border border-amber-700/30">💰 $50</span>}
+                    {mathEliminated && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400 border border-red-800/50 no-underline" title="Cannot mathematically catch the leader">✕ Eliminated</span>
+                    )}
+                    {!mathEliminated && idx === 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-wc-gold/20 text-wc-gold border border-wc-gold/40">💰 $500</span>}
+                    {!mathEliminated && idx === 1 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-400/10 text-gray-300 border border-gray-400/30">💰 $250</span>}
+                    {!mathEliminated && idx === 2 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-700/20 text-amber-600 border border-amber-700/30">💰 $50</span>}
                   </div>
                   {picksRevealed ? (
                     <div className="text-xs text-gray-400">
                       Teams: {getTeamPts(entry).toFixed(1)} pts · Players: {getPlayerPts(entry).toFixed(1)} pts
                       <span className="ml-2 text-gray-500">· {entryGroupGamesRemaining(entry)} group games left</span>
-                      <span className="ml-2 text-blue-400/70">· max {calcMaxPts(entry, teamStats, playerStats).toFixed(0)} pts</span>
+                      <span className="ml-2 text-blue-400/70">· max {maxPts.toFixed(0)} pts</span>
                     </div>
                   ) : (
                     <div className="text-xs text-gray-500">Picks hidden until kickoff</div>
@@ -310,7 +322,8 @@ export default function LeaderboardPage() {
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
