@@ -192,21 +192,25 @@ export default function StatsPage() {
               <div key={tier.tier} className="tier-card">
                 <h4 className="font-semibold text-sm text-gray-400 mb-3">{tier.label}</h4>
                 <div className="space-y-2">
-                  {sorted.map(([name, count]) => (
+                  {sorted.map(([name, count]) => {
+                    const out = FORCE_ELIMINATED.has(name)
+                    return (
                     <div key={name}>
                       <div className="flex justify-between text-sm mb-0.5">
                         <span className={`font-medium ${
+                          out ? 'line-through text-gray-500' :
                           name === most[0] ? 'text-wc-gold' :
                           name === least[0] && sorted.length > 1 ? 'text-gray-500' : 'text-white'
                         }`}>
                           {name}
-                          {name === most[0] && <span className="ml-1 text-xs">👑</span>}
-                          {name === least[0] && sorted.length > 1 && <span className="ml-1 text-xs text-gray-600">← least</span>}
+                          {!out && name === most[0] && <span className="ml-1 text-xs">👑</span>}
+                          {!out && name === least[0] && sorted.length > 1 && <span className="ml-1 text-xs text-gray-600">← least</span>}
+                          {out && <span className="ml-1 text-xs text-red-500 no-underline" title="Eliminated">✕</span>}
                         </span>
                       </div>
                       <Bar count={count} total={n} />
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )
