@@ -111,6 +111,7 @@ export default function LeaderboardPage() {
   const [adminPw, setAdminPw] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [sortMode, setSortMode] = useState('current') // 'current' | 'max'
 
   const picksRevealed = new Date() >= LOCK_TIME || isAdmin
 
@@ -139,6 +140,10 @@ export default function LeaderboardPage() {
   }
 
   const sortedEntries = [...entries].sort((a, b) => {
+    if (sortMode === 'max') {
+      const maxDiff = calcMaxPts(b, teamStats, playerStats) - calcMaxPts(a, teamStats, playerStats)
+      if (maxDiff !== 0) return maxDiff
+    }
     const ptsDiff = (b.total_points || 0) - (a.total_points || 0)
     if (ptsDiff !== 0) return ptsDiff
     return tiebreakerGoals(b) - tiebreakerGoals(a)
@@ -199,6 +204,29 @@ export default function LeaderboardPage() {
         <div className="tier-card border-yellow-600/40 bg-yellow-900/10 mb-6 text-center py-4">
           <p className="text-yellow-400 font-medium">🔒 Picks are hidden until tournament kickoff on June 11</p>
           <p className="text-gray-400 text-sm mt-1">You can see who entered, but not what they picked.</p>
+        </div>
+      )}
+
+      {/* Sort toggle */}
+      {picksRevealed && (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-400">Sort:</span>
+          <button
+            onClick={() => setSortMode('current')}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+              sortMode === 'current' ? 'bg-wc-gold text-black' : 'bg-wc-card border border-wc-border text-gray-400 hover:text-white'
+            }`}
+          >
+            Current points
+          </button>
+          <button
+            onClick={() => setSortMode('max')}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+              sortMode === 'max' ? 'bg-wc-gold text-black' : 'bg-wc-card border border-wc-border text-gray-400 hover:text-white'
+            }`}
+          >
+            Max possible
+          </button>
         </div>
       )}
 
