@@ -75,7 +75,7 @@ export default function StatsPage() {
     'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
     'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
     'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
-    'South Africa', 'Japan', 'Germany',
+    'South Africa', 'Japan', 'Germany', 'Ivory Coast',
   ])
 
   // Count how many entries have each team (across all tiers)
