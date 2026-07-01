@@ -26,6 +26,7 @@ const FORCE_ELIMINATED = new Set([
   'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
   'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
   'South Africa', 'Japan', 'Germany', 'Ivory Coast', 'Netherlands', 'Sweden',
+  'Ecuador',
 ])
 
 // Max additional points a team can still earn from here.
