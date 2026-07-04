@@ -77,7 +77,7 @@ export default function StatsPage() {
     'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
     'South Africa', 'Japan', 'Germany', 'Ivory Coast', 'Netherlands', 'Sweden',
     'Ecuador', 'DR Congo', 'Senegal', 'Bosnia', 'Austria', 'Croatia', 'Algeria',
-    'Australia', 'Cape Verde', 'Ghana', 'Canada',
+    'Australia', 'Cape Verde', 'Ghana', 'Canada', 'Paraguay',
   ])
 
   // Count how many entries have each team (across all tiers)
