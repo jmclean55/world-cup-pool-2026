@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { TEAM_TIERS } from '../data/teams.js'
-import { PLAYER_TIERS } from '../data/players.js'
+import { TEAM_TIERS, FORCE_ELIMINATED, isPlayerEliminated } from '../data/teams.js'
+import { PLAYER_TIERS, ALL_PLAYERS } from '../data/players.js'
+
+const PLAYER_COUNTRY = Object.fromEntries(ALL_PLAYERS.map(p => [p.name, p.country]))
 
 export default function StatsPage() {
   const [entries, setEntries] = useState([])
@@ -68,18 +70,6 @@ export default function StatsPage() {
       </div>
     )
   }
-
-  // Teams confirmed eliminated. 48-team format: top 2 per group + 8 best 3rd-place teams advance,
-  // so a 3rd-place finisher is NOT eliminated until the cross-group tally is in — admin curates this set.
-  const FORCE_ELIMINATED = new Set([
-    'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
-    'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
-    'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
-    'South Africa', 'Japan', 'Germany', 'Ivory Coast', 'Netherlands', 'Sweden',
-    'Ecuador', 'DR Congo', 'Senegal', 'Bosnia', 'Austria', 'Croatia', 'Algeria',
-    'Australia', 'Cape Verde', 'Ghana', 'Canada', 'Paraguay', 'Brazil', 'Mexico',
-    'Portugal', 'USA', 'Egypt', 'Colombia', 'Morocco', 'Belgium',
-  ])
 
   // Count how many entries have each team (across all tiers)
   const teamPickCounts = {}
@@ -235,21 +225,25 @@ export default function StatsPage() {
               <div key={tier.tier} className="tier-card">
                 <h4 className="font-semibold text-sm text-gray-400 mb-3">{tier.label}</h4>
                 <div className="space-y-2">
-                  {sorted.map(([name, count]) => (
+                  {sorted.map(([name, count]) => {
+                    const out = isPlayerEliminated(PLAYER_COUNTRY[name])
+                    return (
                     <div key={name}>
                       <div className="flex justify-between text-sm mb-0.5">
                         <span className={`font-medium ${
+                          out ? 'line-through text-gray-500' :
                           name === most[0] ? 'text-wc-gold' :
                           name === least[0] && sorted.length > 1 ? 'text-gray-500' : 'text-white'
                         }`}>
                           {name}
-                          {name === most[0] && <span className="ml-1 text-xs">👑</span>}
-                          {name === least[0] && sorted.length > 1 && <span className="ml-1 text-xs text-gray-600">← least</span>}
+                          {!out && name === most[0] && <span className="ml-1 text-xs">👑</span>}
+                          {!out && name === least[0] && sorted.length > 1 && <span className="ml-1 text-xs text-gray-600">← least</span>}
+                          {out && <span className="ml-1 text-xs text-red-500 no-underline" title="Eliminated">✕</span>}
                         </span>
                       </div>
                       <Bar count={count} total={n} />
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )

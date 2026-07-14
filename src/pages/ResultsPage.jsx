@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { ALL_TEAMS } from '../data/teams.js'
+import { ALL_TEAMS, FORCE_ELIMINATED, isPlayerEliminated } from '../data/teams.js'
 import { ALL_PLAYERS } from '../data/players.js'
 import { calcTeamPoints } from '../data/scoring.js'
+
+const PLAYER_COUNTRY = Object.fromEntries(ALL_PLAYERS.map(p => [p.name, p.country]))
 
 export default function ResultsPage() {
   const [teamStats, setTeamStats] = useState([])
@@ -50,6 +52,7 @@ export default function ResultsPage() {
 
   function teamStatus(t) {
     if (t.champion) return { label: '🏆 Champion', color: 'text-wc-gold' }
+    if (FORCE_ELIMINATED.has(t.team_name)) return { label: '✕ Eliminated', color: 'text-red-500' }
     if (t.semi_final_wins > 0) return { label: 'Semifinalist', color: 'text-purple-400' }
     if (t.quarter_final_wins > 0) return { label: 'Quarterfinalist', color: 'text-blue-400' }
     if (t.round_of_16_wins > 0) return { label: 'R16 winner', color: 'text-cyan-400' }
@@ -94,6 +97,7 @@ export default function ResultsPage() {
             <tbody>
               {teamStats.map(t => {
                 const status = teamStatus(t)
+                const eliminated = FORCE_ELIMINATED.has(t.team_name) && !t.champion
                 const pts = calcTeamPoints({
                   groupWins: t.group_wins, groupDraws: t.group_draws,
                   groupWinnerBonus: t.group_winner ? 1 : 0,
@@ -103,8 +107,8 @@ export default function ResultsPage() {
                   champion: t.champion, upsetWins: t.upset_wins,
                 })
                 return (
-                  <tr key={t.id || t.team_name} className="border-b border-wc-border/40 hover:bg-wc-card/50">
-                    <td className="py-2 px-3 font-medium">{t.team_name}</td>
+                  <tr key={t.id || t.team_name} className={`border-b border-wc-border/40 hover:bg-wc-card/50 ${eliminated ? 'opacity-50' : ''}`}>
+                    <td className={`py-2 px-3 font-medium ${eliminated ? 'line-through text-gray-500' : ''}`}>{t.team_name}</td>
                     <td className="py-2 px-2 text-center text-green-400">{t.group_wins}</td>
                     <td className="py-2 px-2 text-center text-yellow-400">{t.group_draws}</td>
                     <td className="py-2 px-2 text-center text-red-400">{t.group_losses}</td>
@@ -134,16 +138,23 @@ export default function ResultsPage() {
               </tr>
             </thead>
             <tbody>
-              {playerStats.map(p => (
-                <tr key={p.id} className="border-b border-wc-border/40 hover:bg-wc-card/50">
-                  <td className="py-2 px-3 font-medium">{p.player_name}</td>
-                  <td className="py-2 px-3 text-center">{p.group_goals}</td>
-                  <td className="py-2 px-3 text-center">{p.knockout_goals}</td>
-                  <td className="py-2 px-3 text-center font-bold text-wc-gold">
-                    {((p.group_goals || 0) * 1 + (p.knockout_goals || 0) * 1.5).toFixed(1)}
-                  </td>
-                </tr>
-              ))}
+              {playerStats.map(p => {
+                const country = PLAYER_COUNTRY[p.player_name]
+                const eliminated = isPlayerEliminated(country)
+                return (
+                  <tr key={p.id || p.player_name} className={`border-b border-wc-border/40 hover:bg-wc-card/50 ${eliminated ? 'opacity-50' : ''}`}>
+                    <td className={`py-2 px-3 font-medium ${eliminated ? 'line-through text-gray-500' : ''}`}>
+                      {p.player_name}
+                      {eliminated && <span className="ml-1 text-xs text-red-500" title="Eliminated">✕</span>}
+                    </td>
+                    <td className="py-2 px-3 text-center">{p.group_goals}</td>
+                    <td className="py-2 px-3 text-center">{p.knockout_goals}</td>
+                    <td className="py-2 px-3 text-center font-bold text-wc-gold">
+                      {((p.group_goals || 0) * 1 + (p.knockout_goals || 0) * 1.5).toFixed(1)}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           {playerStats.length === 0 && (

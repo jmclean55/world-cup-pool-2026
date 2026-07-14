@@ -103,3 +103,33 @@ export function getTeamOdds(teamName) {
   const team = ALL_TEAMS.find(t => t.name === teamName)
   return team ? team.odds : 0
 }
+
+// Teams that can no longer earn points. Manual list because the 8-best-3rds
+// rule in the 48-team format makes elimination non-derivable from W/L alone.
+export const FORCE_ELIMINATED = new Set([
+  'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
+  'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
+  'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
+  'South Africa', 'Japan', 'Germany', 'Ivory Coast', 'Netherlands', 'Sweden',
+  'Ecuador', 'DR Congo', 'Senegal', 'Bosnia', 'Austria', 'Croatia', 'Algeria',
+  'Australia', 'Cape Verde', 'Ghana', 'Canada', 'Paraguay', 'Brazil', 'Mexico',
+  'Portugal', 'USA', 'Egypt', 'Colombia', 'Morocco', 'Belgium',
+  'Norway', 'Switzerland',
+  'France',
+])
+
+export function isTeamEliminated(teamName) {
+  return FORCE_ELIMINATED.has(teamName)
+}
+
+// Countries with players still alive in the tournament. Update as teams
+// are eliminated. Anyone not on this list is treated as eliminated for
+// player-scoring purposes.
+export const ACTIVE_PLAYER_COUNTRIES = new Set([
+  'Spain', 'England', 'Argentina',
+])
+
+export function isPlayerEliminated(country) {
+  if (!country) return false
+  return !ACTIVE_PLAYER_COUNTRIES.has(country)
+}

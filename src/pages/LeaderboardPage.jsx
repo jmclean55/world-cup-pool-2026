@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { TEAM_TIERS } from '../data/teams.js'
+import { TEAM_TIERS, FORCE_ELIMINATED, isPlayerEliminated } from '../data/teams.js'
 import { PLAYER_TIERS, ALL_PLAYERS } from '../data/players.js'
 
 const PLAYER_COUNTRY = Object.fromEntries(ALL_PLAYERS.map(p => [p.name, p.country]))
@@ -20,17 +20,6 @@ function calcTeamPts(s) {
     + (s.champion ? SCORING.champion : 0)
     + (s.upset_wins || 0) * SCORING.upsetBonus
 }
-
-const FORCE_ELIMINATED = new Set([
-  'Haiti', 'Turkey', 'Tunisia', 'Jordan', 'Panama',
-  'Czech Republic', 'Qatar', 'Scotland', 'South Korea', 'New Zealand',
-  'Iran', 'Saudi Arabia', 'Uruguay', 'Curacao', 'Iraq', 'Uzbekistan',
-  'South Africa', 'Japan', 'Germany', 'Ivory Coast', 'Netherlands', 'Sweden',
-  'Ecuador', 'DR Congo', 'Senegal', 'Bosnia', 'Austria', 'Croatia', 'Algeria',
-  'Australia', 'Cape Verde', 'Ghana', 'Canada', 'Paraguay', 'Brazil', 'Mexico',
-  'Portugal', 'USA', 'Egypt', 'Colombia', 'Morocco', 'Belgium',
-  'Norway', 'Switzerland',
-])
 
 // Max additional points a team can still earn from here.
 // 48-team format: 3rd-place finishers may still advance via the 8-best-3rds bracket,
@@ -61,7 +50,7 @@ function calcMaxPts(entry, teamStats, playerStats) {
     const playerName = entry[`player_tier${i}`]
     if (!playerName || playerStats[playerName] === undefined) continue
     const country = PLAYER_COUNTRY[playerName]
-    if (country && FORCE_ELIMINATED.has(country)) continue
+    if (isPlayerEliminated(country)) continue
     max += 5 * SCORING.playerKnockoutGoal
   }
   return max
@@ -344,11 +333,14 @@ export default function LeaderboardPage() {
                     const stats = playerStats[pick] || {}
                     const pts = (stats.group_goals || 0) * SCORING.playerGroupGoal
                       + (stats.knockout_goals || 0) * SCORING.playerKnockoutGoal
+                    const country = PLAYER_COUNTRY[pick]
+                    const isEliminated = isPlayerEliminated(country)
                     return (
-                      <div key={tier.tier} className="flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0">
+                      <div key={tier.tier} className={`flex justify-between text-sm py-1.5 border-b border-wc-border/50 last:border-0 ${isEliminated ? 'opacity-50' : ''}`}>
                         <div>
                           <span className="text-gray-400 text-xs">T{tier.tier} </span>
-                          <span className="font-medium">{pick}</span>
+                          <span className={`font-medium ${isEliminated ? 'line-through text-gray-500' : ''}`}>{pick}</span>
+                          {isEliminated && <span className="ml-1 text-xs text-red-500" title="Eliminated">✕</span>}
                         </div>
                         <span className="text-gray-400">{pts > 0 ? `${pts.toFixed(1)}pts` : '—'}</span>
                       </div>
