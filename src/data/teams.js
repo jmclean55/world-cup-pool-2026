@@ -115,7 +115,7 @@ export const FORCE_ELIMINATED = new Set([
   'Australia', 'Cape Verde', 'Ghana', 'Canada', 'Paraguay', 'Brazil', 'Mexico',
   'Portugal', 'USA', 'Egypt', 'Colombia', 'Morocco', 'Belgium',
   'Norway', 'Switzerland',
-  'France',
+  'France', 'England',
 ])
 
 export function isTeamEliminated(teamName) {
@@ -126,7 +126,7 @@ export function isTeamEliminated(teamName) {
 // are eliminated. Anyone not on this list is treated as eliminated for
 // player-scoring purposes.
 export const ACTIVE_PLAYER_COUNTRIES = new Set([
-  'Spain', 'England', 'Argentina',
+  'Spain', 'Argentina',
 ])
 
 export function isPlayerEliminated(country) {
